@@ -1,0 +1,7 @@
+fyers_apiv2==2.0.5
+matplotlib==3.5.1
+pandas==1.2.4
+requests==2.25.1
+streamlit==1.8.1
+streamlit_option_menu==0.3.2
+

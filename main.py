@@ -4,6 +4,96 @@ from streamlit_option_menu import option_menu
 import matplotlib.pyplot as plt
 import pandas as pd
 import my_lib as nf
+import time
+import seaborn as sns
+
+
+def covert_to_short_number(number):
+    return numerize.numerize(number, 2)
+
+
+def number_to_month(number):
+    number = int(number)
+    if number <= 12:
+        month_name_list = ['Jan', 'Feb', 'Mar', 'Apr', 'May',
+                           'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        return month_name_list[number-1]
+    else:
+        print('Wrong Input')
+
+
+def load_sales_data():
+    sales_data = pd.read_csv('./data/all_month_data.csv')
+    sales_data.dropna(axis="index", how="all", inplace=True)
+    sales_data['Month'] = sales_data['Order Date'].str[0:2]
+    sales_data.set_index('Order ID')
+
+    filt = sales_data['Quantity Ordered'] == 'Quantity Ordered'
+    new_df = sales_data.loc[-filt]
+
+    new_df['Quantity Ordered'] = new_df['Quantity Ordered'].astype('int32')
+    new_df['Price Each'] = new_df['Price Each'].astype('float64')
+    new_df['Sales'] = (new_df['Quantity Ordered'] * new_df['Price Each'])
+    return new_df
+
+
+def monthly_sales_report():
+    df = load_sales_data()
+    df = df.groupby('Month').sum()
+    df['Month Name'] = df.index
+    df['Month Name'] = df['Month Name'].apply(number_to_month)
+
+    fig = plt.figure(figsize=(8, 4))
+    # sns.set_style('darkgrid')
+    sns.barplot(df['Month Name'], df['Sales'])
+    st.pyplot(fig)
+
+
+def best_city_sales_report():
+    df = load_sales_data()
+    df['City'] = df['Purchase Address'].apply(lambda x: x.split(',')[1])
+    city_grp = df.groupby(['City'])
+    new_df = city_grp['Sales'].sum()
+    return new_df
+
+
+def best_product_sold_report():
+    df = load_sales_data()
+    new_df = df.groupby(['Product']).sum()
+    data = new_df.sort_values(by='Quantity Ordered')
+    return data
+
+
+def monthly_sales_report_line_chart():
+    df = load_sales_data()
+    df = df.groupby('Month').sum()
+    df['Month Name'] = df.index
+    df['Month Name'] = df['Month Name'].apply(number_to_month)
+
+    fig = plt.figure(figsize=(8, 4))
+    # sns.set_style('darkgrid')
+    month = df.index
+    sales = df['Sales']
+    plt.plot(month, sales)
+    st.pyplot(fig)
+
+
+def product_sold():
+    df = load_sales_data()
+    new_df = df.groupby(['Product']).sum()
+    data = new_df.sort_values(by='Quantity Ordered')
+
+    products = data.index
+    quantity = data['Quantity Ordered']
+
+    # plt.style.use('seaborn')
+    fig = plt.figure(figsize=(8, 4))
+
+    plt.barh(products, quantity)
+    plt.xlabel('Units')
+    plt.xticks(size=10)
+    plt.yticks(size=10)
+    st.pyplot(fig)
 
 
 # page configuration for wide area
@@ -29,11 +119,34 @@ with st.sidebar:
 
 # seles report
 if selected == "Sales Report":
-    st.header("working on...")
+
+    monthly_sales_report_line_chart()
+
+    monthly_sales_report()
+
+    product_sold()
+
+    st.title(
+        "Thus, December was the best month for sales. and the money earned was more than 45M usd")
+    # st.line_chart(data['Sales'])
+
+    st.title("title...")
+    # st.bar_chart(data['Sales'])
+
+    st.title('Which city had the highest sales?')
+
+    best_city_report = best_city_sales_report()
+    st.bar_chart(best_city_report)
+
+    st.title('Which product was sold the most?')
+    best_product_sold = best_product_sold_report()
+    st.bar_chart(best_product_sold)
+
 
 # covid 19 report
 if selected == "Covid 19 Report":
     st.header("working on...")
+
 
 # zomato report
 if selected == "Zomato":

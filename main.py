@@ -46,7 +46,10 @@ def monthly_sales_report():
     fig = plt.figure(figsize=(8, 4))
     # sns.set_style('darkgrid')
     sns.barplot(df['Month Name'], df['Sales'])
+    sns.lineplot(x=df['Month Name'], y=df['Sales'], data=df)
     st.pyplot(fig)
+
+    # sns.barplot(x, y, color='blue')
 
 
 def best_city_sales_report():

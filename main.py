@@ -6,50 +6,23 @@ import my_lib as my_lib_obj
 import streamlit as st
 from streamlit_option_menu import option_menu
 
+# sales report
+
 
 def load_sales_data():
-    sales_data = pd.read_csv('./data/sales_data.csv')
-    sales_data.dropna(axis="index", how="all", inplace=True)
-    sales_data['Month'] = sales_data['Order Date'].str[0:2]
-    sales_data.set_index('Order ID')
+    sns.set_style('darkgrid')
+    data = pd.read_csv('./data/sales_data.csv')
+    data.dropna(axis="index", how="all", inplace=True)
+    data['Month'] = data['Order Date'].str[0:2]
+    data.set_index('Order ID')
 
-    filt = sales_data['Quantity Ordered'] == 'Quantity Ordered'
-    new_df = sales_data.loc[-filt]
+    filt = data['Quantity Ordered'] == 'Quantity Ordered'
+    df = data.loc[-filt]
 
-    new_df['Quantity Ordered'] = new_df['Quantity Ordered'].astype('int32')
-    new_df['Price Each'] = new_df['Price Each'].astype('float64')
-    new_df['Sales'] = (new_df['Quantity Ordered'] * new_df['Price Each'])
-    return new_df
-
-
-def monthly_sales_report():
-    df = load_sales_data()
-    df = df.groupby('Month').sum()
-    df['Month Name'] = df.index
-    df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
-
-    fig = plt.figure(figsize=(8, 4))
-    # sns.set_style('darkgrid')
-    sns.barplot(df['Month Name'], df['Sales'])
-    sns.lineplot(x=df['Month Name'], y=df['Sales'], data=df)
-    st.pyplot(fig)
-
-    # sns.barplot(x, y, color='blue')
-
-
-def best_city_sales_report():
-    df = load_sales_data()
-    df['City'] = df['Purchase Address'].apply(lambda x: x.split(',')[1])
-    city_grp = df.groupby(['City'])
-    new_df = city_grp['Sales'].sum()
-    return new_df
-
-
-def best_product_sold_report():
-    df = load_sales_data()
-    new_df = df.groupby(['Product']).sum()
-    data = new_df.sort_values(by='Quantity Ordered')
-    return data
+    df['Quantity Ordered'] = df['Quantity Ordered'].astype('int32')
+    df['Price Each'] = df['Price Each'].astype('float64')
+    df['Sales'] = (df['Quantity Ordered'] * df['Price Each'])
+    return df
 
 
 def monthly_sales_report_line_chart():
@@ -59,11 +32,41 @@ def monthly_sales_report_line_chart():
     df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
 
     fig = plt.figure(figsize=(8, 4))
-    # sns.set_style('darkgrid')
-    month = df.index
-    sales = df['Sales']
-    plt.plot(month, sales)
+    sns.lineplot(df['Month Name'], df['Sales'])
     st.pyplot(fig)
+
+
+def monthly_sales_report_bar_chart():
+    data = load_sales_data()
+    df = data.groupby('Month').sum()
+    df['Month Name'] = df.index
+    df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
+
+    fig = plt.figure(figsize=(8, 4))
+    sns.barplot(df['Month Name'], df['Sales'])
+    st.pyplot(fig)
+
+
+def best_city_sales_report():
+    data = load_sales_data()
+    data['City'] = data['Purchase Address'].apply(lambda x: x.split(',')[1])
+    city_grp = data.groupby(['City'])
+    df = city_grp['Sales'].sum()
+    df.rename('Units')
+
+    df['City'] = df.index
+    print("best city sales report .....", df['City'])
+
+    fig = plt.figure(figsize=(8, 4))
+    sns.barplot(df['City'], df['Sales'], df)
+    st.pyplot(fig)
+
+
+def best_product_sold_report():
+    df = load_sales_data()
+    new_df = df.groupby(['Product']).sum()
+    data = new_df.sort_values(by='Quantity Ordered')
+    return data
 
 
 def product_sold():
@@ -106,10 +109,14 @@ with st.sidebar:
 # seles report
 if selected == "Sales Report":
 
+    st.subheader(' Monthly Sales')
     monthly_sales_report_line_chart()
+    monthly_sales_report_bar_chart()
 
-    monthly_sales_report()
+    st.subheader('Which city had the highest sales?')
+    best_city_sales_report()
 
+    st.subheader('product')
     product_sold()
 
     st.title(
@@ -136,4 +143,5 @@ if selected == "Covid 19 Report":
 
 # zomato report
 if selected == "Zomato":
-    st.header("working on...")
+    st.text('Fixed width text')
+    st.markdown('_Markdown_')

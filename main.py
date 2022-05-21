@@ -22,6 +22,8 @@ def load_sales_data():
     df['Quantity Ordered'] = df['Quantity Ordered'].astype('int32')
     df['Price Each'] = df['Price Each'].astype('float64')
     df['Sales'] = (df['Quantity Ordered'] * df['Price Each'])
+    columns = df.columns
+    print("Sales data all columns : ", columns)
     return df
 
 
@@ -32,7 +34,7 @@ def monthly_sales_report_line_chart():
     df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
 
     fig = plt.figure(figsize=(8, 4))
-    sns.lineplot(df['Month Name'], df['Sales'])
+    sns.lineplot(df['Month Name'], df['Sales'], marker='o')
     st.pyplot(fig)
 
 
@@ -47,43 +49,61 @@ def monthly_sales_report_bar_chart():
     st.pyplot(fig)
 
 
-def best_city_sales_report():
+def best_city_sales_report_chart():
     data = load_sales_data()
     data['City'] = data['Purchase Address'].apply(lambda x: x.split(',')[1])
     city_grp = data.groupby(['City'])
     df = city_grp['Sales'].sum()
     df.rename('Units')
+    st.bar_chart(df)
 
-    df['City'] = df.index
-    print("best city sales report .....", df['City'])
+
+def best_product_sold_report_chart():
+    data = load_sales_data()
+    df = data.groupby(['Product']).sum()
+    new_df = df.sort_values(by='Quantity Ordered')
 
     fig = plt.figure(figsize=(8, 4))
-    sns.barplot(df['City'], df['Sales'], df)
-    st.pyplot(fig)
-
-
-def best_product_sold_report():
-    df = load_sales_data()
-    new_df = df.groupby(['Product']).sum()
-    data = new_df.sort_values(by='Quantity Ordered')
-    return data
-
-
-def product_sold():
-    df = load_sales_data()
-    new_df = df.groupby(['Product']).sum()
-    data = new_df.sort_values(by='Quantity Ordered')
-
-    products = data.index
-    quantity = data['Quantity Ordered']
-
-    # plt.style.use('seaborn')
-    fig = plt.figure(figsize=(8, 4))
-
-    plt.barh(products, quantity)
+    plt.barh(new_df.index, new_df['Quantity Ordered'])
     plt.xlabel('Units')
     plt.xticks(size=10)
     plt.yticks(size=10)
+    st.pyplot(fig)
+
+
+def most_expensive_sold_product():
+    data = load_sales_data()
+    df = data.groupby(['Product']).sum()
+    df = df.sort_values(by='Sales')
+
+    products = df.index
+    sales = df['Sales']
+
+    fig = plt.figure(figsize=(8, 4))
+    plt.barh(products, sales)
+    plt.xlabel('Sales in USD')
+    plt.xticks(size=10)
+    plt.yticks(size=10)
+    st.pyplot(fig)
+
+
+def most_sold_mackbook_laptop_in_city():
+    data = load_sales_data()
+    data['City'] = data['Purchase Address'].apply(lambda x: x.split(',')[1])
+    df = data.groupby(['City'])
+
+    mac_users = df['Product'].apply(
+        lambda x: x.str.contains('Macbook Pro Laptop').sum())
+
+    fig = plt.figure(figsize=(8, 4))
+    plt.style.use('seaborn')
+    plt.bar(mac_users.index, mac_users, width=0.5)
+
+    plt.title('MacBooks Sales \n Across the US')
+    plt.xlabel('City')
+    plt.ylabel('Units Sold')
+    plt.xticks(rotation='45', size=13)
+    plt.yticks(size=13)
     st.pyplot(fig)
 
 
@@ -114,26 +134,16 @@ if selected == "Sales Report":
     monthly_sales_report_bar_chart()
 
     st.subheader('Which city had the highest sales?')
-    best_city_sales_report()
+    best_city_sales_report_chart()
 
-    st.subheader('product')
-    product_sold()
+    st.subheader('Which product was sold the most?')
+    best_product_sold_report_chart()
 
-    st.title(
-        "Thus, December was the best month for sales. and the money earned was more than 45M usd")
-    # st.line_chart(data['Sales'])
+    st.subheader("Which sold product was the most expensive?")
+    most_expensive_sold_product()
 
-    st.title("title...")
-    # st.bar_chart(data['Sales'])
-
-    st.title('Which city had the highest sales?')
-
-    best_city_report = best_city_sales_report()
-    st.bar_chart(best_city_report)
-
-    st.title('Which product was sold the most?')
-    best_product_sold = best_product_sold_report()
-    st.bar_chart(best_product_sold)
+    st.subheader("In which city is Macbook pro laptop sold the most?")
+    most_sold_mackbook_laptop_in_city()
 
 
 # covid 19 report

@@ -31,7 +31,7 @@ def monthly_sales_report_line_chart():
     df = load_sales_data()
     df = df.groupby('Month').sum()
     df['Month Name'] = df.index
-    # df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
+    df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
 
     fig = plt.figure(figsize=(8, 4))
     sns.lineplot(df['Month Name'], df['Sales'], marker='o')

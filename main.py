@@ -31,7 +31,7 @@ def monthly_sales_report_line_chart():
     df = load_sales_data()
     df = df.groupby('Month').sum()
     df['Month Name'] = df.index
-    df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
+    # df['Month Name'] = df['Month Name'].apply(my_lib_obj.number_to_month)
 
     fig = plt.figure(figsize=(8, 4))
     sns.lineplot(df['Month Name'], df['Sales'], marker='o')
@@ -148,10 +148,9 @@ if selected == "Sales Report":
 
 # covid 19 report
 if selected == "Covid 19 Report":
-    st.header("working on...")
+    st.markdown("working on...")
 
 
 # zomato report
 if selected == "Zomato":
-    st.text('Fixed width text')
-    st.markdown('_Markdown_')
+    st.markdown("working on...")

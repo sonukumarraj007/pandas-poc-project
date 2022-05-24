@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import my_lib as my_lib_obj
 import streamlit as st
 from streamlit_option_menu import option_menu
+import warnings
+warnings.filterwarnings(action="ignore")
+
 
 # sales report
 
@@ -23,7 +26,6 @@ def load_sales_data():
     df['Price Each'] = df['Price Each'].astype('float64')
     df['Sales'] = (df['Quantity Ordered'] * df['Price Each'])
     columns = df.columns
-    print("Sales data all columns : ", columns)
     return df
 
 
